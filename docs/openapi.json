@@ -1,0 +1,3487 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Deadlock Family Mock API",
+    "version": "1.0.0",
+    "description": "MVP без реальной базы данных, платежей и авторизации. Цены в копейках. Административные маршруты открыты только для демонстрации, не являются защищёнными."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/products": {
+      "get": {
+        "summary": "Поиск, фильтры и пагинация опубликованных товаров",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "get__products",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "collection",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "available",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "new",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "featured",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductPage"
+                },
+                "example": {
+                  "items": [
+                    {
+                      "id": "p1",
+                      "slug": "archive-hoodie",
+                      "name": "Худи «Архив»",
+                      "shortDescription": "Хлопковое худи с вышивкой DF",
+                      "description": "Демонстрационный товар",
+                      "category": "clothing",
+                      "collectionIds": [
+                        "essentials"
+                      ],
+                      "tags": [
+                        "архив"
+                      ],
+                      "images": [
+                        {
+                          "url": "/assets/hoodie.webp",
+                          "alt": "Худи «Архив»"
+                        }
+                      ],
+                      "price": 590000,
+                      "currency": "RUB",
+                      "variants": [
+                        {
+                          "id": "v1-0",
+                          "sku": "DF-1-S",
+                          "size": "S",
+                          "color": "Угольный",
+                          "stock": 8,
+                          "available": true
+                        }
+                      ],
+                      "status": "published",
+                      "isFeatured": true,
+                      "publishedAt": "2026-11-05T00:00:00.000Z",
+                      "createdAt": "2026-11-05T00:00:00.000Z",
+                      "updatedAt": "2026-11-05T00:00:00.000Z"
+                    }
+                  ],
+                  "total": 1,
+                  "page": 1,
+                  "pageSize": 8
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{slug}": {
+      "get": {
+        "summary": "Опубликованный товар",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "get__products__slug_",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                },
+                "example": {
+                  "id": "p1",
+                  "slug": "archive-hoodie",
+                  "name": "Худи «Архив»",
+                  "shortDescription": "Хлопковое худи с вышивкой DF",
+                  "description": "Демонстрационный товар",
+                  "category": "clothing",
+                  "collectionIds": [
+                    "essentials"
+                  ],
+                  "tags": [
+                    "архив"
+                  ],
+                  "images": [
+                    {
+                      "url": "/assets/hoodie.webp",
+                      "alt": "Худи «Архив»"
+                    }
+                  ],
+                  "price": 590000,
+                  "currency": "RUB",
+                  "variants": [
+                    {
+                      "id": "v1-0",
+                      "sku": "DF-1-S",
+                      "size": "S",
+                      "color": "Угольный",
+                      "stock": 8,
+                      "available": true
+                    }
+                  ],
+                  "status": "published",
+                  "isFeatured": true,
+                  "publishedAt": "2026-11-05T00:00:00.000Z",
+                  "createdAt": "2026-11-05T00:00:00.000Z",
+                  "updatedAt": "2026-11-05T00:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/categories": {
+      "get": {
+        "summary": "Ровно четыре категории",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "get__categories",
+        "parameters": [
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Category"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "clothing",
+                    "slug": "clothing",
+                    "name": "Одежда",
+                    "icon": "shirt",
+                    "description": "Любимые вещи на каждый день"
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/collections": {
+      "get": {
+        "summary": "Тематические коллекции",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "get__collections",
+        "parameters": [
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Collection"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "essentials",
+                    "slug": "essentials",
+                    "name": "Символы семьи",
+                    "description": "Вещи, которые объединяют.",
+                    "cover": "/assets/collection-essentials.webp",
+                    "isFeatured": true
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/collections/{slug}": {
+      "get": {
+        "summary": "Коллекция с опубликованными товарами",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "get__collections__slug_",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "collection",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "available",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionPage"
+                },
+                "example": {
+                  "id": "essentials",
+                  "slug": "essentials",
+                  "name": "Символы семьи",
+                  "description": "Вещи, которые объединяют.",
+                  "cover": "/assets/collection-essentials.webp",
+                  "isFeatured": true,
+                  "products": {
+                    "items": [
+                      {
+                        "id": "p1",
+                        "slug": "archive-hoodie",
+                        "name": "Худи «Архив»",
+                        "shortDescription": "Хлопковое худи с вышивкой DF",
+                        "description": "Демонстрационный товар",
+                        "category": "clothing",
+                        "collectionIds": [
+                          "essentials"
+                        ],
+                        "tags": [
+                          "архив"
+                        ],
+                        "images": [
+                          {
+                            "url": "/assets/hoodie.webp",
+                            "alt": "Худи «Архив»"
+                          }
+                        ],
+                        "price": 590000,
+                        "currency": "RUB",
+                        "variants": [
+                          {
+                            "id": "v1-0",
+                            "sku": "DF-1-S",
+                            "size": "S",
+                            "color": "Угольный",
+                            "stock": 8,
+                            "available": true
+                          }
+                        ],
+                        "status": "published",
+                        "isFeatured": true,
+                        "publishedAt": "2026-11-05T00:00:00.000Z",
+                        "createdAt": "2026-11-05T00:00:00.000Z",
+                        "updatedAt": "2026-11-05T00:00:00.000Z"
+                      }
+                    ],
+                    "total": 1,
+                    "page": 1,
+                    "pageSize": 8
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cart/quote": {
+      "post": {
+        "summary": "Проверка текущих цен и остатков",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "post__cart_quote",
+        "parameters": [
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartQuote"
+                },
+                "example": {
+                  "items": [
+                    {
+                      "productId": "p1",
+                      "variantId": "v1-0",
+                      "quantity": 1,
+                      "expectedPrice": 590000,
+                      "name": "Худи «Архив»",
+                      "variantLabel": "S / Угольный",
+                      "price": 590000,
+                      "image": "/assets/hoodie.webp",
+                      "stock": 8,
+                      "available": true,
+                      "changed": false
+                    }
+                  ],
+                  "subtotal": 590000,
+                  "valid": true,
+                  "changed": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/CartItem"
+                    }
+                  }
+                },
+                "required": [
+                  "items"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders": {
+      "post": {
+        "summary": "Создать тестовый заказ без оплаты",
+        "description": "Цены и остатки проверяются сервером. expectedPrice нужен только для проверки согласия с ценой. При PRICE_CHANGED или STOCK_CHANGED возвращается 409. Контакты проверяются и отбрасываются. Заказ demo_created хранится только в демо-сессии.",
+        "operationId": "post__orders",
+        "parameters": [
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Создано",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                },
+                "example": {
+                  "id": "00000000-0000-4000-8000-000000000001",
+                  "number": "DF-0001",
+                  "items": [
+                    {
+                      "productId": "p1",
+                      "variantId": "v1-0",
+                      "quantity": 1,
+                      "expectedPrice": 590000,
+                      "name": "Худи «Архив»",
+                      "variantLabel": "S / Угольный",
+                      "price": 590000,
+                      "image": "/assets/hoodie.webp"
+                    }
+                  ],
+                  "subtotal": 590000,
+                  "shipping": 0,
+                  "total": 590000,
+                  "status": "demo_created",
+                  "createdAt": "2026-11-05T00:00:00.000Z",
+                  "delivery": "pickup"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderInput"
+              },
+              "example": {
+                "items": [
+                  {
+                    "productId": "p1",
+                    "variantId": "v1-0",
+                    "quantity": 1,
+                    "expectedPrice": 590000
+                  }
+                ],
+                "contact": {
+                  "name": "Тестовый гость",
+                  "email": "guest@example.com",
+                  "address": "Тестовый город, Архивная 1"
+                },
+                "delivery": "pickup",
+                "demoConsent": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "summary": "Тестовый заказ текущей сессии",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "get__orders__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                },
+                "example": {
+                  "id": "00000000-0000-4000-8000-000000000001",
+                  "number": "DF-0001",
+                  "items": [
+                    {
+                      "productId": "p1",
+                      "variantId": "v1-0",
+                      "quantity": 1,
+                      "expectedPrice": 590000,
+                      "name": "Худи «Архив»",
+                      "variantLabel": "S / Угольный",
+                      "price": 590000,
+                      "image": "/assets/hoodie.webp"
+                    }
+                  ],
+                  "subtotal": 590000,
+                  "shipping": 0,
+                  "total": 590000,
+                  "status": "demo_created",
+                  "createdAt": "2026-11-05T00:00:00.000Z",
+                  "delivery": "pickup"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/products": {
+      "get": {
+        "summary": "Все товары, включая черновики",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "get__admin_products",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "collection",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "available",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductPage"
+                },
+                "example": {
+                  "items": [
+                    {
+                      "id": "p1",
+                      "slug": "archive-hoodie",
+                      "name": "Худи «Архив»",
+                      "shortDescription": "Хлопковое худи с вышивкой DF",
+                      "description": "Демонстрационный товар",
+                      "category": "clothing",
+                      "collectionIds": [
+                        "essentials"
+                      ],
+                      "tags": [
+                        "архив"
+                      ],
+                      "images": [
+                        {
+                          "url": "/assets/hoodie.webp",
+                          "alt": "Худи «Архив»"
+                        }
+                      ],
+                      "price": 590000,
+                      "currency": "RUB",
+                      "variants": [
+                        {
+                          "id": "v1-0",
+                          "sku": "DF-1-S",
+                          "size": "S",
+                          "color": "Угольный",
+                          "stock": 8,
+                          "available": true
+                        }
+                      ],
+                      "status": "published",
+                      "isFeatured": true,
+                      "publishedAt": "2026-11-05T00:00:00.000Z",
+                      "createdAt": "2026-11-05T00:00:00.000Z",
+                      "updatedAt": "2026-11-05T00:00:00.000Z"
+                    }
+                  ],
+                  "total": 1,
+                  "page": 1,
+                  "pageSize": 8
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Создать товар",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "post__admin_products",
+        "parameters": [
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Создано",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                },
+                "example": {
+                  "id": "p1",
+                  "slug": "archive-hoodie",
+                  "name": "Худи «Архив»",
+                  "shortDescription": "Хлопковое худи с вышивкой DF",
+                  "description": "Демонстрационный товар",
+                  "category": "clothing",
+                  "collectionIds": [
+                    "essentials"
+                  ],
+                  "tags": [
+                    "архив"
+                  ],
+                  "images": [
+                    {
+                      "url": "/assets/hoodie.webp",
+                      "alt": "Худи «Архив»"
+                    }
+                  ],
+                  "price": 590000,
+                  "currency": "RUB",
+                  "variants": [
+                    {
+                      "id": "v1-0",
+                      "sku": "DF-1-S",
+                      "size": "S",
+                      "color": "Угольный",
+                      "stock": 8,
+                      "available": true
+                    }
+                  ],
+                  "status": "published",
+                  "isFeatured": true,
+                  "publishedAt": "2026-11-05T00:00:00.000Z",
+                  "createdAt": "2026-11-05T00:00:00.000Z",
+                  "updatedAt": "2026-11-05T00:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductInput"
+              },
+              "example": {
+                "slug": "archive-hoodie",
+                "name": "Худи «Архив»",
+                "shortDescription": "Хлопковое худи с вышивкой DF",
+                "description": "Демонстрационный товар",
+                "category": "clothing",
+                "collectionIds": [
+                  "essentials"
+                ],
+                "tags": [
+                  "архив"
+                ],
+                "images": [
+                  {
+                    "url": "/assets/hoodie.webp",
+                    "alt": "Худи «Архив»"
+                  }
+                ],
+                "price": 590000,
+                "variants": [
+                  {
+                    "id": "v1-0",
+                    "sku": "DF-1-S",
+                    "size": "S",
+                    "color": "Угольный",
+                    "stock": 8,
+                    "available": true
+                  }
+                ],
+                "status": "published",
+                "isFeatured": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/products/{id}": {
+      "get": {
+        "summary": "Товар для редактирования",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "get__admin_products__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                },
+                "example": {
+                  "id": "p1",
+                  "slug": "archive-hoodie",
+                  "name": "Худи «Архив»",
+                  "shortDescription": "Хлопковое худи с вышивкой DF",
+                  "description": "Демонстрационный товар",
+                  "category": "clothing",
+                  "collectionIds": [
+                    "essentials"
+                  ],
+                  "tags": [
+                    "архив"
+                  ],
+                  "images": [
+                    {
+                      "url": "/assets/hoodie.webp",
+                      "alt": "Худи «Архив»"
+                    }
+                  ],
+                  "price": 590000,
+                  "currency": "RUB",
+                  "variants": [
+                    {
+                      "id": "v1-0",
+                      "sku": "DF-1-S",
+                      "size": "S",
+                      "color": "Угольный",
+                      "stock": 8,
+                      "available": true
+                    }
+                  ],
+                  "status": "published",
+                  "isFeatured": true,
+                  "publishedAt": "2026-11-05T00:00:00.000Z",
+                  "createdAt": "2026-11-05T00:00:00.000Z",
+                  "updatedAt": "2026-11-05T00:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Изменить, опубликовать или архивировать товар",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "patch__admin_products__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                },
+                "example": {
+                  "id": "p1",
+                  "slug": "archive-hoodie",
+                  "name": "Худи «Архив»",
+                  "shortDescription": "Хлопковое худи с вышивкой DF",
+                  "description": "Демонстрационный товар",
+                  "category": "clothing",
+                  "collectionIds": [
+                    "essentials"
+                  ],
+                  "tags": [
+                    "архив"
+                  ],
+                  "images": [
+                    {
+                      "url": "/assets/hoodie.webp",
+                      "alt": "Худи «Архив»"
+                    }
+                  ],
+                  "price": 590000,
+                  "currency": "RUB",
+                  "variants": [
+                    {
+                      "id": "v1-0",
+                      "sku": "DF-1-S",
+                      "size": "S",
+                      "color": "Угольный",
+                      "stock": 8,
+                      "available": true
+                    }
+                  ],
+                  "status": "published",
+                  "isFeatured": true,
+                  "publishedAt": "2026-11-05T00:00:00.000Z",
+                  "createdAt": "2026-11-05T00:00:00.000Z",
+                  "updatedAt": "2026-11-05T00:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductPatch"
+              },
+              "example": {
+                "price": 620000,
+                "status": "published"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Удалить товар",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "delete__admin_products__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                },
+                "example": {
+                  "ok": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/collections": {
+      "get": {
+        "summary": "Коллекции для редактора",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "get__admin_collections",
+        "parameters": [
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Collection"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "essentials",
+                    "slug": "essentials",
+                    "name": "Символы семьи",
+                    "description": "Вещи, которые объединяют.",
+                    "cover": "/assets/collection-essentials.webp",
+                    "isFeatured": true
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Создать коллекцию с товарами",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "post__admin_collections",
+        "parameters": [
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Создано",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                },
+                "example": {
+                  "id": "essentials",
+                  "slug": "essentials",
+                  "name": "Символы семьи",
+                  "description": "Вещи, которые объединяют.",
+                  "cover": "/assets/collection-essentials.webp",
+                  "isFeatured": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CollectionInput"
+              },
+              "example": {
+                "id": "essentials",
+                "slug": "essentials",
+                "name": "Символы семьи",
+                "description": "Вещи, которые объединяют.",
+                "cover": "/assets/collection-essentials.webp",
+                "isFeatured": true,
+                "productIds": [
+                  "p1"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/collections/{id}": {
+      "patch": {
+        "summary": "Изменить коллекцию и состав",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "patch__admin_collections__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                },
+                "example": {
+                  "id": "essentials",
+                  "slug": "essentials",
+                  "name": "Символы семьи",
+                  "description": "Вещи, которые объединяют.",
+                  "cover": "/assets/collection-essentials.webp",
+                  "isFeatured": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CollectionInput"
+              },
+              "example": {
+                "id": "essentials",
+                "slug": "essentials",
+                "name": "Символы семьи",
+                "description": "Вещи, которые объединяют.",
+                "cover": "/assets/collection-essentials.webp",
+                "isFeatured": true,
+                "productIds": [
+                  "p1"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/orders": {
+      "get": {
+        "summary": "Список тестовых заказов текущей сессии",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "get__admin_orders",
+        "parameters": [
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Order"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000000001",
+                    "number": "DF-0001",
+                    "items": [
+                      {
+                        "productId": "p1",
+                        "variantId": "v1-0",
+                        "quantity": 1,
+                        "expectedPrice": 590000,
+                        "name": "Худи «Архив»",
+                        "variantLabel": "S / Угольный",
+                        "price": 590000,
+                        "image": "/assets/hoodie.webp"
+                      }
+                    ],
+                    "subtotal": 590000,
+                    "shipping": 0,
+                    "total": 590000,
+                    "status": "demo_created",
+                    "createdAt": "2026-11-05T00:00:00.000Z",
+                    "delivery": "pickup"
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/orders/{id}": {
+      "patch": {
+        "summary": "Изменить тестовый статус заказа",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "patch__admin_orders__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                },
+                "example": {
+                  "id": "00000000-0000-4000-8000-000000000001",
+                  "number": "DF-0001",
+                  "items": [
+                    {
+                      "productId": "p1",
+                      "variantId": "v1-0",
+                      "quantity": 1,
+                      "expectedPrice": 590000,
+                      "name": "Худи «Архив»",
+                      "variantLabel": "S / Угольный",
+                      "price": 590000,
+                      "image": "/assets/hoodie.webp"
+                    }
+                  ],
+                  "subtotal": 590000,
+                  "shipping": 0,
+                  "total": 590000,
+                  "status": "demo_created",
+                  "createdAt": "2026-11-05T00:00:00.000Z",
+                  "delivery": "pickup"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "demo_created",
+                      "demo_processing",
+                      "demo_completed",
+                      "demo_cancelled"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/demo/reset": {
+      "post": {
+        "summary": "Сбросить демо-каталог, коллекции и заказы",
+        "description": "Демонстрационные данные изолированы cookie df_demo. Сценарии ошибок: ?scenario=400, 404, 500. Контактные данные не сохраняются.",
+        "operationId": "post__demo_reset",
+        "parameters": [
+          {
+            "name": "scenario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "400",
+                "404",
+                "500",
+                "empty"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                },
+                "example": {
+                  "ok": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Проверьте входные данные",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "Проверьте входные данные"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Запись не найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "NOT_FOUND",
+                    "message": "Запись не найдена"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Остаток или цена изменились",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "STOCK_CHANGED",
+                    "message": "Остаток или цена изменились"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Архив временно недоступен. Попробуйте ещё раз.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": {
+                    "code": "DEMO_SERVER_ERROR",
+                    "message": "Архив временно недоступен. Попробуйте ещё раз."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "enum": [
+              "clothing",
+              "keychains",
+              "figurines",
+              "souvenirs"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "icon",
+          "description"
+        ]
+      },
+      "ProductImage": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "alt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "alt"
+        ]
+      },
+      "ProductVariant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "stock": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9999
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "price": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "sku",
+          "stock",
+          "available"
+        ]
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "shortDescription": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "clothing",
+              "keychains",
+              "figurines",
+              "souvenirs"
+            ]
+          },
+          "collectionIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductImage"
+            }
+          },
+          "price": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "RUB"
+            ]
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductVariant"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "shortDescription",
+          "description",
+          "category",
+          "collectionIds",
+          "tags",
+          "images",
+          "price",
+          "currency",
+          "variants",
+          "status",
+          "isFeatured",
+          "publishedAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "Collection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "cover": {
+            "type": "string"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "description",
+          "cover",
+          "isFeatured"
+        ]
+      },
+      "CollectionInput": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "cover": {
+            "type": "string"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "productIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "description",
+          "cover",
+          "isFeatured",
+          "productIds"
+        ]
+      },
+      "CartItem": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "variantId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99
+          },
+          "expectedPrice": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "productId",
+          "variantId",
+          "quantity",
+          "expectedPrice"
+        ]
+      },
+      "OrderItem": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "variantId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "expectedPrice": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "name": {
+            "type": "string"
+          },
+          "variantLabel": {
+            "type": "string"
+          },
+          "price": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "image": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "productId",
+          "variantId",
+          "quantity",
+          "expectedPrice",
+          "name",
+          "variantLabel",
+          "price",
+          "image"
+        ]
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            }
+          },
+          "subtotal": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "shipping": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "demo_created",
+              "demo_processing",
+              "demo_completed",
+              "demo_cancelled"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "delivery": {
+            "type": "string",
+            "enum": [
+              "pickup",
+              "courier"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "items",
+          "subtotal",
+          "shipping",
+          "total",
+          "status",
+          "createdAt",
+          "delivery"
+        ]
+      },
+      "OrderInput": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartItem"
+            }
+          },
+          "contact": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "maxLength": 80,
+                "minLength": 1
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "maxLength": 120
+              },
+              "address": {
+                "type": "string",
+                "minLength": 5,
+                "maxLength": 250
+              }
+            },
+            "required": [
+              "name",
+              "email",
+              "address"
+            ]
+          },
+          "delivery": {
+            "type": "string",
+            "enum": [
+              "pickup",
+              "courier"
+            ]
+          },
+          "demoConsent": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "contact",
+          "delivery",
+          "demoConsent"
+        ]
+      },
+      "CartQuote": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/OrderItem"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "stock": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "available": {
+                      "type": "boolean"
+                    },
+                    "changed": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "stock",
+                    "available",
+                    "changed"
+                  ]
+                }
+              ]
+            }
+          },
+          "subtotal": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "valid": {
+            "type": "boolean"
+          },
+          "changed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "subtotal",
+          "valid",
+          "changed"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "ProductPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "CollectionPage": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Collection"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "products": {
+                "$ref": "#/components/schemas/ProductPage"
+              }
+            },
+            "required": [
+              "products"
+            ]
+          }
+        ]
+      },
+      "Ok": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ]
+      },
+      "ProductInput": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "shortDescription": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "clothing",
+              "keychains",
+              "figurines",
+              "souvenirs"
+            ]
+          },
+          "collectionIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductImage"
+            }
+          },
+          "price": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductVariant"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "isFeatured": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "shortDescription",
+          "description",
+          "category",
+          "collectionIds",
+          "tags",
+          "images",
+          "price",
+          "variants",
+          "status",
+          "isFeatured"
+        ]
+      },
+      "ProductPatch": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "shortDescription": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "clothing",
+              "keychains",
+              "figurines",
+              "souvenirs"
+            ]
+          },
+          "collectionIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductImage"
+            }
+          },
+          "price": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductVariant"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "isFeatured": {
+            "type": "boolean"
+          }
+        },
+        "required": []
+      }
+    },
+    "securitySchemes": {
+      "demoSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "df_demo",
+        "description": "Автоматически создаваемая изолированная демо-сессия. Это не авторизация."
+      }
+    }
+  }
+}

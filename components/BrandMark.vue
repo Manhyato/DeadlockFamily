@@ -1,0 +1,1 @@
+<template><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="25"/><circle cx="32" cy="32" r="21" opacity=".4"/><path d="M32 0v13m0 38v13M0 32h13m38 0h13M11 11l8 8m26 26 8 8M11 53l8-8m26-26 8-8M32 5l4 9m-4-9-4 9"/></svg><span>D<span>F</span></span></span></template>

@@ -1,0 +1,2 @@
+<script setup lang="ts">import type {Collection} from '~/shared/types';defineProps<{collection:Collection}>()</script>
+<template><NuxtLink :to="`/collections/${collection.slug}`" class="collection-card"><img :src="collection.cover" alt="" width="650" height="280" loading="lazy"><div><span class="eyebrow">Коллекция</span><h3>{{collection.name}}</h3><p>{{collection.description}}</p><span class="collection-cta">Открыть коллекцию <AppIcon name="arrow" :size="18"/></span></div></NuxtLink></template>

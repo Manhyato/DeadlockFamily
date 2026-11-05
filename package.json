@@ -1,0 +1,11 @@
+{
+  "name": "deadlock-family", "private": true, "type": "module",
+  "scripts": {
+    "dev": "nuxt dev --host 127.0.0.1", "build": "nuxt build",
+    "build:cloudflare": "node scripts/build-cloudflare.mjs", "preview": "node .output/server/index.mjs",
+    "postinstall": "nuxt prepare", "typecheck": "nuxt typecheck",
+    "test": "node --import tsx --test tests/*.test.ts", "test:e2e": "playwright test"
+  },
+  "dependencies": { "nuxt": "^3.20.0", "vue": "^3.5.0", "pinia": "^3.0.0", "@pinia/nuxt": "^0.11.0", "@nuxtjs/tailwindcss": "^6.14.0" },
+  "devDependencies": { "@types/node": "^24.0.0", "typescript": "^5.9.0", "vue-tsc": "^3.1.0", "@playwright/test": "^1.56.0", "tsx": "^4.20.0", "sharp": "^0.34.0" }
+}

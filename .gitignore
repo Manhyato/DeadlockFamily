@@ -1,0 +1,10 @@
+node_modules/
+.nuxt/
+.output/
+.sites-runtime/
+dist/
+test-results/
+playwright-report/
+*.tar.gz
+.env
+*.log

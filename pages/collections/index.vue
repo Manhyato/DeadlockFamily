@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const api=useApi();const {data,pending,error,refresh}=await useAsyncData('collections',()=>api.collections());useSeoMeta({title:'Коллекции — Deadlock Family',description:'Тематические коллекции, символы семьи и особые находки из архива.'})
+</script>
+<template><div class="container page"><div class="breadcrumbs"><NuxtLink to="/">Главная</NuxtLink><AppIcon name="chevron"/><span>Коллекции</span></div><div class="page-heading"><span class="eyebrow">У КАЖДОЙ ВЕЩИ ЕСТЬ СВОЁ МЕСТО</span><h1>Истории в деталях</h1><p>Некоторые вещи связаны невидимой нитью. Мы собрали их вместе — чтобы вам было проще найти свою историю.</p></div><ApiState :pending="pending" :error="error" :empty="!data?.length" @retry="refresh()"/><div class="collection-grid"><CollectionCard v-for="c in data" :key="c.id" :collection="c"/></div></div></template>

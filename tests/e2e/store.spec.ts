@@ -1,0 +1,60 @@
+import {test,expect} from '@playwright/test'
+test('buyer selects variants, persists basket and creates a demo order visible in admin',async({page})=>{
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message))
+ await page.goto('/');await expect(page.getByRole('heading',{level:1})).toHaveText('Deadlock Family')
+ await page.getByRole('link',{name:/Худи «Архив»/}).click()
+ await page.getByRole('button',{name:'S / Угольный',exact:true}).click();await page.getByRole('button',{name:/Добавить в корзину/}).click()
+ await page.getByRole('button',{name:'M / Угольный',exact:true}).click();await page.getByRole('button',{name:/Добавить в корзину/}).click()
+ await page.getByRole('link',{name:'Перейти в корзину'}).click();await expect(page.locator('.cart-item')).toHaveCount(2)
+ await page.reload();await expect(page.locator('.cart-item')).toHaveCount(2)
+ await page.getByRole('button',{name:/Увеличить количество/}).first().click();await expect(page.locator('.quantity>span').first()).toHaveText('2')
+ await page.getByRole('button',{name:'К оформлению'}).click();await expect(page.getByRole('heading',{name:'Оформление заказа'})).toBeVisible()
+ await page.getByLabel('Я использую вымышленные данные').check();await page.getByRole('button',{name:'Создать тестовый заказ'}).click()
+ await expect(page.getByRole('heading',{name:'Тестовый заказ создан'})).toBeVisible();await expect(page.locator('.status-pill')).toHaveText('demo_created')
+ await page.goto('/admin/orders');await expect(page.getByRole('heading',{name:'DF-0001'})).toBeVisible();await page.getByLabel('Статус заказа DF-0001').selectOption('demo_processing')
+ await expect(page.getByRole('status')).toContainText('Тестовый статус обновлён');expect(errors).toEqual([])
+})
+test('admin saves draft, publishes, edits price and hides a product',async({page})=>{
+ await page.goto('/admin/products/new');await page.getByLabel('Название *',{exact:true}).fill('Архивный тест');await page.getByLabel('Slug — адрес латиницей *').fill('archive-e2e');await page.getByLabel('Цена, ₽ *',{exact:true}).fill('1234');await page.getByLabel('Уникальный SKU *').fill('DF-E2E-ONE');await page.getByRole('button',{name:'Выбрать изображение hoodie',exact:true}).click()
+ await page.getByRole('button',{name:'Сохранить черновик'}).click();await expect(page).not.toHaveURL(/\/new$/)
+ const editUrl=page.url();await page.getByRole('button',{name:'Опубликовать',exact:true}).click();await expect(page.getByRole('status')).toContainText('Опубликован')
+ await page.goto('/products/archive-e2e');await expect(page.getByRole('heading',{name:'Архивный тест'})).toBeVisible();await expect(page.locator('.product-price')).toContainText('1 234')
+ await page.goto(editUrl);await page.getByLabel('Цена, ₽ *',{exact:true}).fill('1500');await page.getByRole('button',{name:'Сохранить изменения'}).click();await expect(page.getByRole('status')).toContainText('Сохранено')
+ await page.goto('/products/archive-e2e');await expect(page.locator('.product-price')).toContainText('1 500')
+ await page.goto(editUrl);await page.getByRole('button',{name:'Сохранить черновик'}).click();await expect(page.getByRole('status')).toContainText('Черновик');expect((await page.request.get('/api/v1/products/archive-e2e')).status()).toBe(404)
+})
+test('search and filter URLs, empty/error states and unknown slugs',async({page})=>{
+ await page.goto('/shop?q=Худи&sort=price-asc');await expect(page.locator('.product-card')).toHaveCount(2)
+ await page.getByLabel('Поиск по каталогу').fill('неизвестнаявещь');await page.getByRole('button',{name:'Найти товары'}).click();await expect(page.getByRole('heading',{name:'Пока ничего не найдено'})).toBeVisible()
+ await page.getByRole('button',{name:'Сбросить фильтры',exact:true}).last().click();await expect(page.locator('.product-card')).toHaveCount(9)
+ await page.goto('/shop?scenario=500');await expect(page.getByRole('heading',{name:'Архив ненадолго закрылся'})).toBeVisible()
+ for(const path of ['/shop/category/unknown','/products/unknown','/collections/unknown','/admin/products/unknown','/missing']){await page.goto(path);await expect(page.getByRole('heading',{name:'Этой главы пока нет'})).toBeVisible()}
+})
+test('sessions isolate data and server returns stable validation errors',async({request,browser})=>{
+ const a=await browser.newContext(),b=await browser.newContext();await a.request.get('http://127.0.0.1:3000/api/v1/categories');await b.request.get('http://127.0.0.1:3000/api/v1/categories')
+ const p=(await (await a.request.get('http://127.0.0.1:3000/api/v1/admin/products')).json()).items[0];await a.request.patch(`http://127.0.0.1:3000/api/v1/admin/products/${p.id}`,{data:{status:'draft'}})
+ expect((await (await a.request.get('http://127.0.0.1:3000/api/v1/products')).json()).total).toBe(11);expect((await (await b.request.get('http://127.0.0.1:3000/api/v1/products')).json()).total).toBe(12)
+ const invalid=await request.post('/api/v1/orders',{data:{}});expect(invalid.status()).toBe(400);expect((await invalid.json()).error.code).toBe('INVALID_CONTACT');await a.close();await b.close()
+})
+test('collection editor saves product membership and public collection shows it',async({page})=>{
+ await page.goto('/admin/collections');await page.getByLabel('Название *',{exact:true}).fill('Тестовая коллекция');await page.getByLabel('Slug латиницей *').fill('e2e-collection');await page.getByLabel('Худи «Архив»',{exact:true}).check();await page.getByRole('button',{name:'Сохранить коллекцию'}).click();await expect(page.getByRole('status')).toContainText('Коллекция сохранена')
+ await page.getByRole('button',{name:/Тестовая коллекция/}).click();await expect(page.getByLabel('Худи «Архив»',{exact:true})).toBeChecked()
+ await page.getByRole('link',{name:'Открыть магазин'}).click();await page.goto('/collections/e2e-collection');await expect(page.locator('.product-card')).toHaveCount(1)
+})
+test('basket requires accepting updated server prices and blocks unavailable products',async({page})=>{
+ await page.goto('/products/archive-hoodie');await page.getByRole('button',{name:/Добавить в корзину/}).click()
+ await page.request.patch('/api/v1/admin/products/p1',{data:{price:650000}})
+ await page.getByRole('link',{name:'Перейти в корзину'}).click();await expect(page.getByRole('button',{name:'Принять новые цены'})).toBeVisible();await expect(page.getByRole('button',{name:'К оформлению'})).toBeDisabled()
+ await page.getByRole('button',{name:'Принять новые цены'}).click();await expect(page.getByRole('button',{name:'К оформлению'})).toBeEnabled()
+ await page.request.patch('/api/v1/admin/products/p1',{data:{status:'archived'}});await page.reload();await expect(page.getByRole('button',{name:'К оформлению'})).toBeDisabled();await expect(page.getByRole('alert')).toContainText('больше недоступна')
+})
+test('desktop, tablet and 360px layouts fit and load their images',async({page})=>{
+ for(const width of [1440,768,360]){
+  await page.setViewportSize({width,height:1000});await page.goto('/');await expect(page.locator('.product-card')).toHaveCount(8)
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+  await page.locator('.site-footer').scrollIntoViewIfNeeded();await page.waitForFunction(()=>Array.from(document.images).every(i=>i.complete))
+  expect(await page.locator('img').evaluateAll(imgs=>imgs.filter(i=>i instanceof HTMLImageElement&&i.naturalWidth===0).map(i=>(i as HTMLImageElement).src))).toEqual([])
+  await page.screenshot({path:`test-results/home-${width}.png`,fullPage:true})
+  for(const path of ['/shop','/products/archive-hoodie','/collections','/about','/admin/products/new','/admin/collections']){await page.goto(path);await expect(page.locator('h1')).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${path} at ${width}`).toBe(true)}
+ }
+})

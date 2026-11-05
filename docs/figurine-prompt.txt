@@ -1,0 +1,6 @@
+Способ: встроенный image_gen (не CLI).
+Исходный PNG: public/assets/archivist.png
+Используемый WebP: public/assets/archivist.webp
+
+Финальный промпт:
+Use case: product-mockup. Asset type: merchandise product photo for Deadlock Family demo store. A beautifully crafted small bronze and dark green resin collectible figurine of an enigmatic cloaked city archivist, wearing a wide brim hat, standing on a circular brass base, a tiny glowing muted green lantern in hand. Antique dark wooden library desk background with softly blurred leather books and warm amber lamp, subtle occult archive atmosphere. One object centered, entire figurine visible with comfortable margins, premium realistic product photography, landscape 3:2 frame. Materials: aged brass, charcoal fabric sculpture, forest green enamel. No text, no watermark, no interface. Demo original character, no specific game character required.

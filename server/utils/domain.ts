@@ -59,7 +59,11 @@ export function createOrder(state:DemoState,input:OrderInput):Order {
   if(quote.changed)fail(409,'PRICE_CHANGED','Цены изменились. Проверьте и подтвердите обновлённую корзину.')
   const shipping=input.delivery==='courier'?35000:0
   const order:Order={id:crypto.randomUUID(),number:`DF-${String(state.orders.length+1).padStart(4,'0')}`,items:quote.items.map(({stock,available,changed,...line})=>line),subtotal:quote.subtotal,shipping,total:quote.subtotal+shipping,status:'demo_created',createdAt:new Date().toISOString(),delivery:input.delivery}
-  for(const l of quote.items)state.products.find(p=>p.id===l.productId)!.variants.find(v=>v.id===l.variantId)!.stock-=l.quantity
+  for(const l of quote.items){
+    const product=state.products.find(p=>p.id===l.productId)!
+    product.variants.find(v=>v.id===l.variantId)!.stock-=l.quantity
+    product.updatedAt=order.createdAt
+  }
   state.orders.unshift(order)
   return order // Contact data is validated and discarded, never retained.
 }

@@ -1,7 +1,9 @@
 # Изображения
 
-archive.png — предоставленный фон. concept.png — предоставленный концепт. Карточки товаров и коллекций используют отдельные фотообласти концепта без интерфейса. prepare-assets.mjs создаёт WebP и облегчённый фон для телефона.
+archive.png — предоставленный фон. concept.png — предоставленный концепт. Декоративные обложки коллекций используют отдельные области концепта. Фотографии товаров больше не вырезаются из макета.
 
-archivist.png — оригинальная демонстрационная фигурка, сгенерирована встроенным image_gen. Итоговый файл: public/assets/archivist.webp.
+Новые отдельные фотографии худи, футболки, двух брелков, постера и блокнота созданы встроенным image_gen. Исходники: assets/sources/*-v2.png. Полный набор точных промптов: docs/product-photo-prompts.json.
 
-Промпт: Premium realistic product photo of a bronze and dark green collectible cloaked city archivist, wide brim hat, lantern, circular brass base, antique wooden library desk, amber light, dark books, muted green glow, landscape 3:2, no text or UI.
+Фигурка: public/assets/archivist.png, также image_gen; промпт в docs/figurine-prompt.txt.
+
+prepare-assets.mjs делает миниатюры public/assets/{name}.webp шириной 640 px и отдельные большие public/assets/{name}-detail-v2.webp шириной 1536 px без увеличения исходников. Галерея использует srcset и показывает товар целиком.

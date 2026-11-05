@@ -12,3 +12,4 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
 .skip-link{visibility:hidden}.skip-link:focus{visibility:visible}
 .collection-card{background:#17160f}.collection-card>img{width:58%;object-position:center}.collection-card:after{background:linear-gradient(90deg,transparent 15%,#17160f66 35%,#17160f 63%)}
+.stock-status.stock-empty{color:#d4b894}.stock-notice{margin-bottom:12px}.product-gallery>img{aspect-ratio:3/2;object-fit:contain;background:#17150f}.product-visual .badge-muted{background:#443d31;color:#e5d5b8}
